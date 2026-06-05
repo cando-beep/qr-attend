@@ -82,6 +82,16 @@ select option{background:var(--surface2);}
 .mode-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(62,207,142,.15);border:1px solid rgba(62,207,142,.3);border-radius:100px;padding:3px 10px;font-size:11px;color:var(--green);margin-left:8px;}
 
 @media print{header{display:none;}.panel{display:block!important;}.qr-grid{grid-template-columns:repeat(3,1fr);}.card{break-inside:avoid;}}
+
+/* カメラスキャン */
+#camera-area{display:none;margin-bottom:1rem;}
+#camera-area.active{display:block;}
+#qr-video{width:100%;border-radius:var(--r);background:#000;max-height:260px;object-fit:cover;}
+#camera-overlay{position:relative;border-radius:var(--r);overflow:hidden;}
+#camera-frame{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:180px;height:180px;border:2px solid var(--accent);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.45);}
+#camera-status{font-size:12px;color:var(--muted);margin-top:.5rem;text-align:center;}
+.btn-camera{background:var(--surface2);border:1px solid var(--accent);color:var(--accent);font-weight:500;}
+.btn-camera.on{background:var(--danger);border-color:var(--danger);color:#fff;}
 </style>
 </head>
 <body>
@@ -750,13 +760,24 @@ select option{background:var(--surface2);}
   </div>
   <div class="card">
     <div class="section-title">スキャン入力</div>
+    <!-- カメラエリア -->
+    <div id="camera-area">
+      <div id="camera-overlay">
+        <video id="qr-video" playsinline autoplay muted></video>
+        <div id="camera-frame"></div>
+      </div>
+      <p id="camera-status">カメラを起動中...</p>
+    </div>
     <div class="scan-big">
+      <button class="btn-camera" id="camera-btn" onclick="toggleCamera()" style="flex-shrink:0;padding:14px 14px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+      </button>
       <input type="text" id="scan-input" placeholder="IDを入力 / QR貼り付け" autocomplete="off" autocorrect="off" autocapitalize="off">
       <button class="btn-success" onclick="doCheck()" style="flex-shrink:0;padding:14px 18px;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
       </button>
     </div>
-    <p style="font-size:12px;color:var(--muted);">QRをカメラで読み取り → コピー → 貼り付けてEnter</p>
+    <p style="font-size:12px;color:var(--muted);">📷 カメラアイコンでQRを直接読み取れます</p>
   </div>
   <div class="card">
     <div class="section-title">スキャン履歴</div>
@@ -965,6 +986,79 @@ function exportHTML() {
 }
 
 renderParticipants();
+
+/* ===== CAMERA QR SCAN ===== */
+let cameraStream = null;
+let scanInterval = null;
+let jsQRLoaded = false;
+
+function loadJsQR(cb) {
+  if (jsQRLoaded) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jsqr/1.4.0/jsQR.min.js';
+  s.onload = () => { jsQRLoaded = true; cb(); };
+  document.head.appendChild(s);
+}
+
+function toggleCamera() {
+  if (cameraStream) {
+    stopCamera();
+  } else {
+    startCamera();
+  }
+}
+
+function startCamera() {
+  loadJsQR(() => {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream => {
+        cameraStream = stream;
+        const video = document.getElementById('qr-video');
+        const area = document.getElementById('camera-area');
+        const btn = document.getElementById('camera-btn');
+        video.srcObject = stream;
+        area.classList.add('active');
+        btn.classList.add('on');
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+        document.getElementById('camera-status').textContent = 'QRコードをカメラに映してください';
+        video.addEventListener('loadedmetadata', () => { video.play(); });
+        scanInterval = setInterval(() => scanFrame(video), 200);
+      })
+      .catch(err => {
+        alert('カメラにアクセスできませんでした。\nブラウザの設定でカメラを許可してください。\n\n' + err.message);
+      });
+  });
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  clearInterval(scanInterval);
+  scanInterval = null;
+  const area = document.getElementById('camera-area');
+  const btn = document.getElementById('camera-btn');
+  area.classList.remove('active');
+  btn.classList.remove('on');
+  btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>';
+}
+
+function scanFrame(video) {
+  if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const code = jsQR(imageData.data, imageData.width, imageData.height);
+  if (code && code.data) {
+    document.getElementById('scan-input').value = code.data;
+    doCheck();
+    document.getElementById('camera-status').textContent = '✅ 読み取り成功: ' + code.data;
+  }
+}
 </script>
 
 
