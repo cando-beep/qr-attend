@@ -93,11 +93,62 @@ select option{background:var(--surface2);}
 .btn-camera{background:var(--surface2);border:1px solid var(--accent);color:var(--accent);font-weight:500;}
 .btn-camera.on{background:var(--danger);border-color:var(--danger);color:#fff;}
 </style>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDiXn1VUceKFuITDCDkoYImL8n3dJdHuTQ",
+    authDomain: "qr-attend-c4051.firebaseapp.com",
+    databaseURL: "https://qr-attend-c4051-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "qr-attend-c4051",
+    storageBucket: "qr-attend-c4051.firebasestorage.app",
+    messagingSenderId: "335834591575",
+    appId: "1:335834591575:web:2943e2e6bc9c25873b4e12"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // グローバルに公開
+  window._fbDb = db;
+  window._fbRef = ref;
+  window._fbSet = set;
+  window._fbOnValue = onValue;
+  window._fbRemove = remove;
+
+  // attendance をリアルタイム同期
+  window._fbReady = false;
+  onValue(ref(db, 'attendance'), (snapshot) => {
+    const data = snapshot.val() || {};
+    // グローバルのattendanceを上書き
+    Object.keys(attendance).forEach(k => delete attendance[k]);
+    Object.assign(attendance, data);
+    updateStats();
+    renderListTab();
+    if (!window._fbReady) {
+      window._fbReady = true;
+      document.getElementById('fb-status').textContent = '🟢 リアルタイム同期中';
+      document.getElementById('fb-status').style.color = 'var(--green)';
+    }
+  });
+
+  // グローバルに書き込み関数を公開
+  window.fbRecord = function(id, timeStr) {
+    set(ref(db, 'attendance/' + id), timeStr);
+  };
+  window.fbDelete = function(id) {
+    remove(ref(db, 'attendance/' + id));
+  };
+  window.fbClearAttendance = function() {
+    remove(ref(db, 'attendance'));
+  };
+</script>
 </head>
 <body>
 
 <header>
-  <div class="logo">QR-ATTEND<span id="mode-indicator"></span></div>
+  <div class="logo">QR-ATTEND<span id="mode-indicator"></span><span id="fb-status" style="font-size:10px;margin-left:8px;color:var(--warn);">🟡 接続中...</span></div>
   <nav>
     <button class="nav-btn active" onclick="go('edit')" id="nav-edit">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
@@ -138,573 +189,573 @@ select option{background:var(--surface2);}
   <div class="card">
     <div class="section-title">参加者リスト <span id="p-count" style="color:var(--accent);">142名</span></div>
     <div id="p-list"><div class="p-row">
-      <span class="p-id">0001</span>
+      <span class="p-id">01</span>
       <span class="p-name">高田　修</span>
-      <button class="p-del" onclick="delP('0001')">✕</button>
+      <button class="p-del" onclick="delP('01')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0002</span>
+      <span class="p-id">02</span>
       <span class="p-name">古池　隆行</span>
-      <button class="p-del" onclick="delP('0002')">✕</button>
+      <button class="p-del" onclick="delP('02')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0003</span>
+      <span class="p-id">03</span>
       <span class="p-name">土井　清志</span>
-      <button class="p-del" onclick="delP('0003')">✕</button>
+      <button class="p-del" onclick="delP('03')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0004</span>
+      <span class="p-id">04</span>
       <span class="p-name">清水　隆史</span>
-      <button class="p-del" onclick="delP('0004')">✕</button>
+      <button class="p-del" onclick="delP('04')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0005</span>
+      <span class="p-id">05</span>
       <span class="p-name">紺野　由美</span>
-      <button class="p-del" onclick="delP('0005')">✕</button>
+      <button class="p-del" onclick="delP('05')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0006</span>
+      <span class="p-id">06</span>
       <span class="p-name">ＮＧＵＹＥＮ　ＴＨＩ　ＬＩＮＨ</span>
-      <button class="p-del" onclick="delP('0006')">✕</button>
+      <button class="p-del" onclick="delP('06')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0007</span>
+      <span class="p-id">07</span>
       <span class="p-name">安藤　千絵</span>
-      <button class="p-del" onclick="delP('0007')">✕</button>
+      <button class="p-del" onclick="delP('07')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0008</span>
+      <span class="p-id">08</span>
       <span class="p-name">持丸　真弓</span>
-      <button class="p-del" onclick="delP('0008')">✕</button>
+      <button class="p-del" onclick="delP('08')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0009</span>
+      <span class="p-id">09</span>
       <span class="p-name">荻原　康</span>
-      <button class="p-del" onclick="delP('0009')">✕</button>
+      <button class="p-del" onclick="delP('09')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0010</span>
+      <span class="p-id">10</span>
       <span class="p-name">加瀬　泰清</span>
-      <button class="p-del" onclick="delP('0010')">✕</button>
+      <button class="p-del" onclick="delP('10')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0011</span>
+      <span class="p-id">11</span>
       <span class="p-name">鈴木　梨絵</span>
-      <button class="p-del" onclick="delP('0011')">✕</button>
+      <button class="p-del" onclick="delP('11')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0012</span>
+      <span class="p-id">12</span>
       <span class="p-name">笹原　法子</span>
-      <button class="p-del" onclick="delP('0012')">✕</button>
+      <button class="p-del" onclick="delP('12')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0013</span>
+      <span class="p-id">13</span>
       <span class="p-name">林　真由子</span>
-      <button class="p-del" onclick="delP('0013')">✕</button>
+      <button class="p-del" onclick="delP('13')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0014</span>
+      <span class="p-id">14</span>
       <span class="p-name">沖田　桃子</span>
-      <button class="p-del" onclick="delP('0014')">✕</button>
+      <button class="p-del" onclick="delP('14')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0015</span>
+      <span class="p-id">15</span>
       <span class="p-name">武川　彩香</span>
-      <button class="p-del" onclick="delP('0015')">✕</button>
+      <button class="p-del" onclick="delP('15')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0016</span>
+      <span class="p-id">16</span>
       <span class="p-name">園部　眞之</span>
-      <button class="p-del" onclick="delP('0016')">✕</button>
+      <button class="p-del" onclick="delP('16')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0017</span>
+      <span class="p-id">17</span>
       <span class="p-name">荒木　秀幸</span>
-      <button class="p-del" onclick="delP('0017')">✕</button>
+      <button class="p-del" onclick="delP('17')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0018</span>
+      <span class="p-id">18</span>
       <span class="p-name">河合　力也</span>
-      <button class="p-del" onclick="delP('0018')">✕</button>
+      <button class="p-del" onclick="delP('18')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0019</span>
+      <span class="p-id">19</span>
       <span class="p-name">髙橋　陽紀</span>
-      <button class="p-del" onclick="delP('0019')">✕</button>
+      <button class="p-del" onclick="delP('19')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0020</span>
+      <span class="p-id">20</span>
       <span class="p-name">布施　仁</span>
-      <button class="p-del" onclick="delP('0020')">✕</button>
+      <button class="p-del" onclick="delP('20')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0021</span>
+      <span class="p-id">21</span>
       <span class="p-name">水口　治紀</span>
-      <button class="p-del" onclick="delP('0021')">✕</button>
+      <button class="p-del" onclick="delP('21')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0022</span>
+      <span class="p-id">22</span>
       <span class="p-name">藤田　忠明</span>
-      <button class="p-del" onclick="delP('0022')">✕</button>
+      <button class="p-del" onclick="delP('22')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0023</span>
+      <span class="p-id">23</span>
       <span class="p-name">ＩＳＬＡＭ　ＭＤ　ＡＭＩＲＵＬ</span>
-      <button class="p-del" onclick="delP('0023')">✕</button>
+      <button class="p-del" onclick="delP('23')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0024</span>
+      <span class="p-id">24</span>
       <span class="p-name">Ｓａｌｉｍ　Ｆｉｔｒｉａｎａ</span>
-      <button class="p-del" onclick="delP('0024')">✕</button>
+      <button class="p-del" onclick="delP('24')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0025</span>
+      <span class="p-id">25</span>
       <span class="p-name">小野寺 友貴</span>
-      <button class="p-del" onclick="delP('0025')">✕</button>
+      <button class="p-del" onclick="delP('25')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0026</span>
+      <span class="p-id">26</span>
       <span class="p-name">日比野　武志</span>
-      <button class="p-del" onclick="delP('0026')">✕</button>
+      <button class="p-del" onclick="delP('26')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0027</span>
+      <span class="p-id">27</span>
       <span class="p-name">山本　浩彦</span>
-      <button class="p-del" onclick="delP('0027')">✕</button>
+      <button class="p-del" onclick="delP('27')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0028</span>
+      <span class="p-id">28</span>
       <span class="p-name">鈴木　剛史</span>
-      <button class="p-del" onclick="delP('0028')">✕</button>
+      <button class="p-del" onclick="delP('28')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0029</span>
+      <span class="p-id">29</span>
       <span class="p-name">清水　邦浩</span>
-      <button class="p-del" onclick="delP('0029')">✕</button>
+      <button class="p-del" onclick="delP('29')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0030</span>
+      <span class="p-id">30</span>
       <span class="p-name">川名　佑亮</span>
-      <button class="p-del" onclick="delP('0030')">✕</button>
+      <button class="p-del" onclick="delP('30')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0031</span>
+      <span class="p-id">31</span>
       <span class="p-name">中村　克樹</span>
-      <button class="p-del" onclick="delP('0031')">✕</button>
+      <button class="p-del" onclick="delP('31')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0032</span>
+      <span class="p-id">32</span>
       <span class="p-name">大塚　純也</span>
-      <button class="p-del" onclick="delP('0032')">✕</button>
+      <button class="p-del" onclick="delP('32')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0033</span>
+      <span class="p-id">33</span>
       <span class="p-name">濱野　浩一</span>
-      <button class="p-del" onclick="delP('0033')">✕</button>
+      <button class="p-del" onclick="delP('33')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0034</span>
+      <span class="p-id">34</span>
       <span class="p-name">内田　勝己</span>
-      <button class="p-del" onclick="delP('0034')">✕</button>
+      <button class="p-del" onclick="delP('34')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0035</span>
+      <span class="p-id">35</span>
       <span class="p-name">土井　祐樹</span>
-      <button class="p-del" onclick="delP('0035')">✕</button>
+      <button class="p-del" onclick="delP('35')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0036</span>
+      <span class="p-id">36</span>
       <span class="p-name">渡邊　文也</span>
-      <button class="p-del" onclick="delP('0036')">✕</button>
+      <button class="p-del" onclick="delP('36')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0037</span>
+      <span class="p-id">37</span>
       <span class="p-name">山岸　大介</span>
-      <button class="p-del" onclick="delP('0037')">✕</button>
+      <button class="p-del" onclick="delP('37')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0038</span>
+      <span class="p-id">38</span>
       <span class="p-name">堀　由美子</span>
-      <button class="p-del" onclick="delP('0038')">✕</button>
+      <button class="p-del" onclick="delP('38')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0039</span>
+      <span class="p-id">39</span>
       <span class="p-name">浅井　真紀子</span>
-      <button class="p-del" onclick="delP('0039')">✕</button>
+      <button class="p-del" onclick="delP('39')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0040</span>
+      <span class="p-id">40</span>
       <span class="p-name">井田　ひろみ</span>
-      <button class="p-del" onclick="delP('0040')">✕</button>
+      <button class="p-del" onclick="delP('40')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0041</span>
+      <span class="p-id">41</span>
       <span class="p-name">横島　守</span>
-      <button class="p-del" onclick="delP('0041')">✕</button>
+      <button class="p-del" onclick="delP('41')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0042</span>
+      <span class="p-id">42</span>
       <span class="p-name">皆見　浩二</span>
-      <button class="p-del" onclick="delP('0042')">✕</button>
+      <button class="p-del" onclick="delP('42')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0043</span>
+      <span class="p-id">43</span>
       <span class="p-name">関根　由次</span>
-      <button class="p-del" onclick="delP('0043')">✕</button>
+      <button class="p-del" onclick="delP('43')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0044</span>
+      <span class="p-id">44</span>
       <span class="p-name">踏分　敏彦</span>
-      <button class="p-del" onclick="delP('0044')">✕</button>
+      <button class="p-del" onclick="delP('44')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0045</span>
+      <span class="p-id">45</span>
       <span class="p-name">中川　稔</span>
-      <button class="p-del" onclick="delP('0045')">✕</button>
+      <button class="p-del" onclick="delP('45')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0046</span>
+      <span class="p-id">46</span>
       <span class="p-name">富田　真琴</span>
-      <button class="p-del" onclick="delP('0046')">✕</button>
+      <button class="p-del" onclick="delP('46')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0047</span>
+      <span class="p-id">47</span>
       <span class="p-name">中村　三紀</span>
-      <button class="p-del" onclick="delP('0047')">✕</button>
+      <button class="p-del" onclick="delP('47')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0048</span>
+      <span class="p-id">48</span>
       <span class="p-name">浅野　幸枝</span>
-      <button class="p-del" onclick="delP('0048')">✕</button>
+      <button class="p-del" onclick="delP('48')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0049</span>
+      <span class="p-id">49</span>
       <span class="p-name">酒井　星華</span>
-      <button class="p-del" onclick="delP('0049')">✕</button>
+      <button class="p-del" onclick="delP('49')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0050</span>
+      <span class="p-id">50</span>
       <span class="p-name">鷲野　友亮</span>
-      <button class="p-del" onclick="delP('0050')">✕</button>
+      <button class="p-del" onclick="delP('50')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0051</span>
+      <span class="p-id">51</span>
       <span class="p-name">谷口　昂輝</span>
-      <button class="p-del" onclick="delP('0051')">✕</button>
+      <button class="p-del" onclick="delP('51')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0052</span>
+      <span class="p-id">52</span>
       <span class="p-name">安藤　慶</span>
-      <button class="p-del" onclick="delP('0052')">✕</button>
+      <button class="p-del" onclick="delP('52')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0053</span>
+      <span class="p-id">53</span>
       <span class="p-name">池田　梢楠</span>
-      <button class="p-del" onclick="delP('0053')">✕</button>
+      <button class="p-del" onclick="delP('53')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0054</span>
+      <span class="p-id">54</span>
       <span class="p-name">張　栄晋</span>
-      <button class="p-del" onclick="delP('0054')">✕</button>
+      <button class="p-del" onclick="delP('54')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0055</span>
+      <span class="p-id">55</span>
       <span class="p-name">桑原　里美</span>
-      <button class="p-del" onclick="delP('0055')">✕</button>
+      <button class="p-del" onclick="delP('55')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0056</span>
+      <span class="p-id">56</span>
       <span class="p-name">上田　悦子</span>
-      <button class="p-del" onclick="delP('0056')">✕</button>
+      <button class="p-del" onclick="delP('56')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0057</span>
+      <span class="p-id">57</span>
       <span class="p-name">堀田　美智子</span>
-      <button class="p-del" onclick="delP('0057')">✕</button>
+      <button class="p-del" onclick="delP('57')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0058</span>
+      <span class="p-id">58</span>
       <span class="p-name">芳賀　健介</span>
-      <button class="p-del" onclick="delP('0058')">✕</button>
+      <button class="p-del" onclick="delP('58')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0059</span>
+      <span class="p-id">59</span>
       <span class="p-name">下村　知大</span>
-      <button class="p-del" onclick="delP('0059')">✕</button>
+      <button class="p-del" onclick="delP('59')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0060</span>
+      <span class="p-id">60</span>
       <span class="p-name">小田桐　秀幸</span>
-      <button class="p-del" onclick="delP('0060')">✕</button>
+      <button class="p-del" onclick="delP('60')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0061</span>
+      <span class="p-id">61</span>
       <span class="p-name">石原　和行</span>
-      <button class="p-del" onclick="delP('0061')">✕</button>
+      <button class="p-del" onclick="delP('61')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0062</span>
+      <span class="p-id">62</span>
       <span class="p-name">藤田　博</span>
-      <button class="p-del" onclick="delP('0062')">✕</button>
+      <button class="p-del" onclick="delP('62')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0063</span>
+      <span class="p-id">63</span>
       <span class="p-name">向田　潤一</span>
-      <button class="p-del" onclick="delP('0063')">✕</button>
+      <button class="p-del" onclick="delP('63')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0064</span>
+      <span class="p-id">64</span>
       <span class="p-name">三橋　徹</span>
-      <button class="p-del" onclick="delP('0064')">✕</button>
+      <button class="p-del" onclick="delP('64')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0065</span>
+      <span class="p-id">65</span>
       <span class="p-name">根岸　良成</span>
-      <button class="p-del" onclick="delP('0065')">✕</button>
+      <button class="p-del" onclick="delP('65')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0066</span>
+      <span class="p-id">66</span>
       <span class="p-name">萩原　文彦</span>
-      <button class="p-del" onclick="delP('0066')">✕</button>
+      <button class="p-del" onclick="delP('66')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0067</span>
+      <span class="p-id">67</span>
       <span class="p-name">上田　祐二</span>
-      <button class="p-del" onclick="delP('0067')">✕</button>
+      <button class="p-del" onclick="delP('67')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0068</span>
+      <span class="p-id">68</span>
       <span class="p-name">三澤　翔</span>
-      <button class="p-del" onclick="delP('0068')">✕</button>
+      <button class="p-del" onclick="delP('68')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0069</span>
+      <span class="p-id">69</span>
       <span class="p-name">上村　東</span>
-      <button class="p-del" onclick="delP('0069')">✕</button>
+      <button class="p-del" onclick="delP('69')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0070</span>
+      <span class="p-id">70</span>
       <span class="p-name">上村　海帆</span>
-      <button class="p-del" onclick="delP('0070')">✕</button>
+      <button class="p-del" onclick="delP('70')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0071</span>
+      <span class="p-id">71</span>
       <span class="p-name">米澤　慎二</span>
-      <button class="p-del" onclick="delP('0071')">✕</button>
+      <button class="p-del" onclick="delP('71')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0072</span>
+      <span class="p-id">72</span>
       <span class="p-name">櫛田　宗一</span>
-      <button class="p-del" onclick="delP('0072')">✕</button>
+      <button class="p-del" onclick="delP('72')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0073</span>
+      <span class="p-id">73</span>
       <span class="p-name">伊藤　俊行</span>
-      <button class="p-del" onclick="delP('0073')">✕</button>
+      <button class="p-del" onclick="delP('73')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0074</span>
+      <span class="p-id">74</span>
       <span class="p-name">宮久保　寛明</span>
-      <button class="p-del" onclick="delP('0074')">✕</button>
+      <button class="p-del" onclick="delP('74')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0075</span>
+      <span class="p-id">75</span>
       <span class="p-name">志賀　一哉</span>
-      <button class="p-del" onclick="delP('0075')">✕</button>
+      <button class="p-del" onclick="delP('75')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0076</span>
+      <span class="p-id">76</span>
       <span class="p-name">馬場　亮臣</span>
-      <button class="p-del" onclick="delP('0076')">✕</button>
+      <button class="p-del" onclick="delP('76')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0077</span>
+      <span class="p-id">77</span>
       <span class="p-name">中川　真</span>
-      <button class="p-del" onclick="delP('0077')">✕</button>
+      <button class="p-del" onclick="delP('77')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0078</span>
+      <span class="p-id">78</span>
       <span class="p-name">根　恵太</span>
-      <button class="p-del" onclick="delP('0078')">✕</button>
+      <button class="p-del" onclick="delP('78')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0079</span>
+      <span class="p-id">79</span>
       <span class="p-name">大内　修司</span>
-      <button class="p-del" onclick="delP('0079')">✕</button>
+      <button class="p-del" onclick="delP('79')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0080</span>
+      <span class="p-id">80</span>
       <span class="p-name">森谷　智彦</span>
-      <button class="p-del" onclick="delP('0080')">✕</button>
+      <button class="p-del" onclick="delP('80')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0081</span>
+      <span class="p-id">81</span>
       <span class="p-name">藤元　誠二</span>
-      <button class="p-del" onclick="delP('0081')">✕</button>
+      <button class="p-del" onclick="delP('81')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0082</span>
+      <span class="p-id">82</span>
       <span class="p-name">酒巻　和寛</span>
-      <button class="p-del" onclick="delP('0082')">✕</button>
+      <button class="p-del" onclick="delP('82')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0083</span>
+      <span class="p-id">83</span>
       <span class="p-name">玉城　雄太</span>
-      <button class="p-del" onclick="delP('0083')">✕</button>
+      <button class="p-del" onclick="delP('83')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0084</span>
+      <span class="p-id">84</span>
       <span class="p-name">サリヨシ　シャハプトラ</span>
-      <button class="p-del" onclick="delP('0084')">✕</button>
+      <button class="p-del" onclick="delP('84')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0085</span>
+      <span class="p-id">85</span>
       <span class="p-name">小田島　真之介</span>
-      <button class="p-del" onclick="delP('0085')">✕</button>
+      <button class="p-del" onclick="delP('85')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0086</span>
+      <span class="p-id">86</span>
       <span class="p-name">降矢　温志</span>
-      <button class="p-del" onclick="delP('0086')">✕</button>
+      <button class="p-del" onclick="delP('86')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0087</span>
+      <span class="p-id">87</span>
       <span class="p-name">グェン　ヴァン　トアン</span>
-      <button class="p-del" onclick="delP('0087')">✕</button>
+      <button class="p-del" onclick="delP('87')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0088</span>
+      <span class="p-id">88</span>
       <span class="p-name">渡部　敦未</span>
-      <button class="p-del" onclick="delP('0088')">✕</button>
+      <button class="p-del" onclick="delP('88')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0089</span>
+      <span class="p-id">89</span>
       <span class="p-name">ＬＥ　ＶＡＮ　ＱＵＯＣ</span>
-      <button class="p-del" onclick="delP('0089')">✕</button>
+      <button class="p-del" onclick="delP('89')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0090</span>
+      <span class="p-id">90</span>
       <span class="p-name">富田 真司</span>
-      <button class="p-del" onclick="delP('0090')">✕</button>
+      <button class="p-del" onclick="delP('90')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0091</span>
+      <span class="p-id">91</span>
       <span class="p-name">東谷 勝弘</span>
-      <button class="p-del" onclick="delP('0091')">✕</button>
+      <button class="p-del" onclick="delP('91')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0092</span>
+      <span class="p-id">92</span>
       <span class="p-name">佐々木 千鶴子</span>
-      <button class="p-del" onclick="delP('0092')">✕</button>
+      <button class="p-del" onclick="delP('92')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0093</span>
+      <span class="p-id">93</span>
       <span class="p-name">竹内 隆之介</span>
-      <button class="p-del" onclick="delP('0093')">✕</button>
+      <button class="p-del" onclick="delP('93')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0094</span>
+      <span class="p-id">94</span>
       <span class="p-name">田中 順二</span>
-      <button class="p-del" onclick="delP('0094')">✕</button>
+      <button class="p-del" onclick="delP('94')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0095</span>
+      <span class="p-id">95</span>
       <span class="p-name">桐生 健作</span>
-      <button class="p-del" onclick="delP('0095')">✕</button>
+      <button class="p-del" onclick="delP('95')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0096</span>
+      <span class="p-id">96</span>
       <span class="p-name">阿部 利二</span>
-      <button class="p-del" onclick="delP('0096')">✕</button>
+      <button class="p-del" onclick="delP('96')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0097</span>
+      <span class="p-id">97</span>
       <span class="p-name">桐生 藤雄</span>
-      <button class="p-del" onclick="delP('0097')">✕</button>
+      <button class="p-del" onclick="delP('97')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0098</span>
+      <span class="p-id">98</span>
       <span class="p-name">湯沢 敬</span>
-      <button class="p-del" onclick="delP('0098')">✕</button>
+      <button class="p-del" onclick="delP('98')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0099</span>
+      <span class="p-id">99</span>
       <span class="p-name">柿下 幸喜</span>
-      <button class="p-del" onclick="delP('0099')">✕</button>
+      <button class="p-del" onclick="delP('99')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0100</span>
+      <span class="p-id">100</span>
       <span class="p-name">松田 勇二</span>
-      <button class="p-del" onclick="delP('0100')">✕</button>
+      <button class="p-del" onclick="delP('100')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0101</span>
+      <span class="p-id">101</span>
       <span class="p-name">安藤 国保</span>
-      <button class="p-del" onclick="delP('0101')">✕</button>
+      <button class="p-del" onclick="delP('101')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0102</span>
+      <span class="p-id">102</span>
       <span class="p-name">熊谷 好武</span>
-      <button class="p-del" onclick="delP('0102')">✕</button>
+      <button class="p-del" onclick="delP('102')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0103</span>
+      <span class="p-id">103</span>
       <span class="p-name">恩田 智也</span>
-      <button class="p-del" onclick="delP('0103')">✕</button>
+      <button class="p-del" onclick="delP('103')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0104</span>
+      <span class="p-id">104</span>
       <span class="p-name">近藤 悠</span>
-      <button class="p-del" onclick="delP('0104')">✕</button>
+      <button class="p-del" onclick="delP('104')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0105</span>
+      <span class="p-id">105</span>
       <span class="p-name">櫻井 勇輝</span>
-      <button class="p-del" onclick="delP('0105')">✕</button>
+      <button class="p-del" onclick="delP('105')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0106</span>
+      <span class="p-id">106</span>
       <span class="p-name">磯部 達也</span>
-      <button class="p-del" onclick="delP('0106')">✕</button>
+      <button class="p-del" onclick="delP('106')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0107</span>
+      <span class="p-id">107</span>
       <span class="p-name">竹村 優</span>
-      <button class="p-del" onclick="delP('0107')">✕</button>
+      <button class="p-del" onclick="delP('107')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0108</span>
+      <span class="p-id">108</span>
       <span class="p-name">木下 翔太</span>
-      <button class="p-del" onclick="delP('0108')">✕</button>
+      <button class="p-del" onclick="delP('108')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0109</span>
+      <span class="p-id">109</span>
       <span class="p-name">増田 裕則</span>
-      <button class="p-del" onclick="delP('0109')">✕</button>
+      <button class="p-del" onclick="delP('109')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0110</span>
+      <span class="p-id">110</span>
       <span class="p-name">関口 哲平</span>
-      <button class="p-del" onclick="delP('0110')">✕</button>
+      <button class="p-del" onclick="delP('110')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0111</span>
+      <span class="p-id">111</span>
       <span class="p-name">北沢 勝</span>
-      <button class="p-del" onclick="delP('0111')">✕</button>
+      <button class="p-del" onclick="delP('111')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0112</span>
+      <span class="p-id">112</span>
       <span class="p-name">倉田 達優</span>
-      <button class="p-del" onclick="delP('0112')">✕</button>
+      <button class="p-del" onclick="delP('112')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0113</span>
+      <span class="p-id">113</span>
       <span class="p-name">木下 大輝</span>
-      <button class="p-del" onclick="delP('0113')">✕</button>
+      <button class="p-del" onclick="delP('113')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0114</span>
+      <span class="p-id">114</span>
       <span class="p-name">小笠 原悠斗</span>
-      <button class="p-del" onclick="delP('0114')">✕</button>
+      <button class="p-del" onclick="delP('114')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0115</span>
+      <span class="p-id">115</span>
       <span class="p-name">下枝 美智子</span>
-      <button class="p-del" onclick="delP('0115')">✕</button>
+      <button class="p-del" onclick="delP('115')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0116</span>
+      <span class="p-id">116</span>
       <span class="p-name">古田 沙緒里</span>
-      <button class="p-del" onclick="delP('0116')">✕</button>
+      <button class="p-del" onclick="delP('116')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0117</span>
+      <span class="p-id">117</span>
       <span class="p-name">原 圭司</span>
-      <button class="p-del" onclick="delP('0117')">✕</button>
+      <button class="p-del" onclick="delP('117')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0118</span>
+      <span class="p-id">118</span>
       <span class="p-name">松下 純</span>
-      <button class="p-del" onclick="delP('0118')">✕</button>
+      <button class="p-del" onclick="delP('118')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0119</span>
+      <span class="p-id">119</span>
       <span class="p-name">細田 正臣</span>
-      <button class="p-del" onclick="delP('0119')">✕</button>
+      <button class="p-del" onclick="delP('119')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0120</span>
+      <span class="p-id">120</span>
       <span class="p-name">鈴木 大介</span>
-      <button class="p-del" onclick="delP('0120')">✕</button>
+      <button class="p-del" onclick="delP('120')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0121</span>
+      <span class="p-id">121</span>
       <span class="p-name">大池 一嘉</span>
-      <button class="p-del" onclick="delP('0121')">✕</button>
+      <button class="p-del" onclick="delP('121')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0122</span>
+      <span class="p-id">122</span>
       <span class="p-name">平栗 和典</span>
-      <button class="p-del" onclick="delP('0122')">✕</button>
+      <button class="p-del" onclick="delP('122')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0123</span>
+      <span class="p-id">123</span>
       <span class="p-name">後藤 敦志</span>
-      <button class="p-del" onclick="delP('0123')">✕</button>
+      <button class="p-del" onclick="delP('123')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0124</span>
+      <span class="p-id">124</span>
       <span class="p-name">熊谷 穏</span>
-      <button class="p-del" onclick="delP('0124')">✕</button>
+      <button class="p-del" onclick="delP('124')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0125</span>
+      <span class="p-id">125</span>
       <span class="p-name">宮島 裕斗</span>
-      <button class="p-del" onclick="delP('0125')">✕</button>
+      <button class="p-del" onclick="delP('125')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0126</span>
+      <span class="p-id">126</span>
       <span class="p-name">恩田 憲子</span>
-      <button class="p-del" onclick="delP('0126')">✕</button>
+      <button class="p-del" onclick="delP('126')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0127</span>
+      <span class="p-id">127</span>
       <span class="p-name">遠山 紀子</span>
-      <button class="p-del" onclick="delP('0127')">✕</button>
+      <button class="p-del" onclick="delP('127')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0128</span>
+      <span class="p-id">128</span>
       <span class="p-name">太田 正樹</span>
-      <button class="p-del" onclick="delP('0128')">✕</button>
+      <button class="p-del" onclick="delP('128')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0129</span>
+      <span class="p-id">129</span>
       <span class="p-name">大島 勇希</span>
-      <button class="p-del" onclick="delP('0129')">✕</button>
+      <button class="p-del" onclick="delP('129')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0130</span>
+      <span class="p-id">130</span>
       <span class="p-name">王锺瑾　（王董事長）</span>
-      <button class="p-del" onclick="delP('0130')">✕</button>
+      <button class="p-del" onclick="delP('130')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0131</span>
+      <span class="p-id">131</span>
       <span class="p-name">王玉弘（王董事長の娘様）</span>
-      <button class="p-del" onclick="delP('0131')">✕</button>
+      <button class="p-del" onclick="delP('131')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0132</span>
+      <span class="p-id">132</span>
       <span class="p-name">黎昭玉　（アニョさん）</span>
-      <button class="p-del" onclick="delP('0132')">✕</button>
+      <button class="p-del" onclick="delP('132')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0133</span>
+      <span class="p-id">133</span>
       <span class="p-name">陳富群　（チンさん）</span>
-      <button class="p-del" onclick="delP('0133')">✕</button>
+      <button class="p-del" onclick="delP('133')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0134</span>
+      <span class="p-id">134</span>
       <span class="p-name">葛 惠珍（カツさん）</span>
-      <button class="p-del" onclick="delP('0134')">✕</button>
+      <button class="p-del" onclick="delP('134')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0135</span>
+      <span class="p-id">135</span>
       <span class="p-name">SOMYOT RUJIWONGROJ（ソムヨットさん）</span>
-      <button class="p-del" onclick="delP('0135')">✕</button>
+      <button class="p-del" onclick="delP('135')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0136</span>
+      <span class="p-id">136</span>
       <span class="p-name">SURACHET KUSOLSONG （スラチェットさん）</span>
-      <button class="p-del" onclick="delP('0136')">✕</button>
+      <button class="p-del" onclick="delP('136')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0137</span>
+      <span class="p-id">137</span>
       <span class="p-name">SOMCHAI SANGTHONG (ソムチャイさん）</span>
-      <button class="p-del" onclick="delP('0137')">✕</button>
+      <button class="p-del" onclick="delP('137')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0138</span>
+      <span class="p-id">138</span>
       <span class="p-name">SEREE JAKKRAWAT（セリさん）</span>
-      <button class="p-del" onclick="delP('0138')">✕</button>
+      <button class="p-del" onclick="delP('138')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0139</span>
+      <span class="p-id">139</span>
       <span class="p-name">PHON HOANG LINH （リンさん）</span>
-      <button class="p-del" onclick="delP('0139')">✕</button>
+      <button class="p-del" onclick="delP('139')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0140</span>
+      <span class="p-id">140</span>
       <span class="p-name">NHU THONG NGUYEN （トンさん）</span>
-      <button class="p-del" onclick="delP('0140')">✕</button>
+      <button class="p-del" onclick="delP('140')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0141</span>
+      <span class="p-id">141</span>
       <span class="p-name">SHRIKANT CHANDRAKANT SHELAR（チャンドラーさん）</span>
-      <button class="p-del" onclick="delP('0141')">✕</button>
+      <button class="p-del" onclick="delP('141')">✕</button>
     </div><div class="p-row">
-      <span class="p-id">0142</span>
+      <span class="p-id">142</span>
       <span class="p-name">ISHA SHARMA（イシャさん）</span>
-      <button class="p-del" onclick="delP('0142')">✕</button>
+      <button class="p-del" onclick="delP('142')">✕</button>
     </div></div>
     <div class="add-row">
       <input type="text" id="add-name" placeholder="名前を入力" autocomplete="off">
@@ -800,13 +851,17 @@ select option{background:var(--surface2);}
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
     結果をCSVで保存
   </button>
+  <button class="btn-full btn-danger" style="margin-top:.5rem;" onclick="resetAttendance()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 .49-3.5"></path></svg>
+    出欠データをリセット（全端末）
+  </button>
 </div>
 
 </main>
 
 <script>
 /* ===== EMBEDDED DATA (populated by exportHTML) ===== */
-var EMBEDDED_PARTICIPANTS = [{"id":"0001","name":"高田　修"},{"id":"0002","name":"古池　隆行"},{"id":"0003","name":"土井　清志"},{"id":"0004","name":"清水　隆史"},{"id":"0005","name":"紺野　由美"},{"id":"0006","name":"ＮＧＵＹＥＮ　ＴＨＩ　ＬＩＮＨ"},{"id":"0007","name":"安藤　千絵"},{"id":"0008","name":"持丸　真弓"},{"id":"0009","name":"荻原　康"},{"id":"0010","name":"加瀬　泰清"},{"id":"0011","name":"鈴木　梨絵"},{"id":"0012","name":"笹原　法子"},{"id":"0013","name":"林　真由子"},{"id":"0014","name":"沖田　桃子"},{"id":"0015","name":"武川　彩香"},{"id":"0016","name":"園部　眞之"},{"id":"0017","name":"荒木　秀幸"},{"id":"0018","name":"河合　力也"},{"id":"0019","name":"髙橋　陽紀"},{"id":"0020","name":"布施　仁"},{"id":"0021","name":"水口　治紀"},{"id":"0022","name":"藤田　忠明"},{"id":"0023","name":"ＩＳＬＡＭ　ＭＤ　ＡＭＩＲＵＬ"},{"id":"0024","name":"Ｓａｌｉｍ　Ｆｉｔｒｉａｎａ"},{"id":"0025","name":"小野寺 友貴"},{"id":"0026","name":"日比野　武志"},{"id":"0027","name":"山本　浩彦"},{"id":"0028","name":"鈴木　剛史"},{"id":"0029","name":"清水　邦浩"},{"id":"0030","name":"川名　佑亮"},{"id":"0031","name":"中村　克樹"},{"id":"0032","name":"大塚　純也"},{"id":"0033","name":"濱野　浩一"},{"id":"0034","name":"内田　勝己"},{"id":"0035","name":"土井　祐樹"},{"id":"0036","name":"渡邊　文也"},{"id":"0037","name":"山岸　大介"},{"id":"0038","name":"堀　由美子"},{"id":"0039","name":"浅井　真紀子"},{"id":"0040","name":"井田　ひろみ"},{"id":"0041","name":"横島　守"},{"id":"0042","name":"皆見　浩二"},{"id":"0043","name":"関根　由次"},{"id":"0044","name":"踏分　敏彦"},{"id":"0045","name":"中川　稔"},{"id":"0046","name":"富田　真琴"},{"id":"0047","name":"中村　三紀"},{"id":"0048","name":"浅野　幸枝"},{"id":"0049","name":"酒井　星華"},{"id":"0050","name":"鷲野　友亮"},{"id":"0051","name":"谷口　昂輝"},{"id":"0052","name":"安藤　慶"},{"id":"0053","name":"池田　梢楠"},{"id":"0054","name":"張　栄晋"},{"id":"0055","name":"桑原　里美"},{"id":"0056","name":"上田　悦子"},{"id":"0057","name":"堀田　美智子"},{"id":"0058","name":"芳賀　健介"},{"id":"0059","name":"下村　知大"},{"id":"0060","name":"小田桐　秀幸"},{"id":"0061","name":"石原　和行"},{"id":"0062","name":"藤田　博"},{"id":"0063","name":"向田　潤一"},{"id":"0064","name":"三橋　徹"},{"id":"0065","name":"根岸　良成"},{"id":"0066","name":"萩原　文彦"},{"id":"0067","name":"上田　祐二"},{"id":"0068","name":"三澤　翔"},{"id":"0069","name":"上村　東"},{"id":"0070","name":"上村　海帆"},{"id":"0071","name":"米澤　慎二"},{"id":"0072","name":"櫛田　宗一"},{"id":"0073","name":"伊藤　俊行"},{"id":"0074","name":"宮久保　寛明"},{"id":"0075","name":"志賀　一哉"},{"id":"0076","name":"馬場　亮臣"},{"id":"0077","name":"中川　真"},{"id":"0078","name":"根　恵太"},{"id":"0079","name":"大内　修司"},{"id":"0080","name":"森谷　智彦"},{"id":"0081","name":"藤元　誠二"},{"id":"0082","name":"酒巻　和寛"},{"id":"0083","name":"玉城　雄太"},{"id":"0084","name":"サリヨシ　シャハプトラ"},{"id":"0085","name":"小田島　真之介"},{"id":"0086","name":"降矢　温志"},{"id":"0087","name":"グェン　ヴァン　トアン"},{"id":"0088","name":"渡部　敦未"},{"id":"0089","name":"ＬＥ　ＶＡＮ　ＱＵＯＣ"},{"id":"0090","name":"富田 真司"},{"id":"0091","name":"東谷 勝弘"},{"id":"0092","name":"佐々木 千鶴子"},{"id":"0093","name":"竹内 隆之介"},{"id":"0094","name":"田中 順二"},{"id":"0095","name":"桐生 健作"},{"id":"0096","name":"阿部 利二"},{"id":"0097","name":"桐生 藤雄"},{"id":"0098","name":"湯沢 敬"},{"id":"0099","name":"柿下 幸喜"},{"id":"0100","name":"松田 勇二"},{"id":"0101","name":"安藤 国保"},{"id":"0102","name":"熊谷 好武"},{"id":"0103","name":"恩田 智也"},{"id":"0104","name":"近藤 悠"},{"id":"0105","name":"櫻井 勇輝"},{"id":"0106","name":"磯部 達也"},{"id":"0107","name":"竹村 優"},{"id":"0108","name":"木下 翔太"},{"id":"0109","name":"増田 裕則"},{"id":"0110","name":"関口 哲平"},{"id":"0111","name":"北沢 勝"},{"id":"0112","name":"倉田 達優"},{"id":"0113","name":"木下 大輝"},{"id":"0114","name":"小笠 原悠斗"},{"id":"0115","name":"下枝 美智子"},{"id":"0116","name":"古田 沙緒里"},{"id":"0117","name":"原 圭司"},{"id":"0118","name":"松下 純"},{"id":"0119","name":"細田 正臣"},{"id":"0120","name":"鈴木 大介"},{"id":"0121","name":"大池 一嘉"},{"id":"0122","name":"平栗 和典"},{"id":"0123","name":"後藤 敦志"},{"id":"0124","name":"熊谷 穏"},{"id":"0125","name":"宮島 裕斗"},{"id":"0126","name":"恩田 憲子"},{"id":"0127","name":"遠山 紀子"},{"id":"0128","name":"太田 正樹"},{"id":"0129","name":"大島 勇希"},{"id":"0130","name":"王锺瑾　（王董事長）"},{"id":"0131","name":"王玉弘（王董事長の娘様）"},{"id":"0132","name":"黎昭玉　（アニョさん）"},{"id":"0133","name":"陳富群　（チンさん）"},{"id":"0134","name":"葛 惠珍（カツさん）"},{"id":"0135","name":"SOMYOT RUJIWONGROJ（ソムヨットさん）"},{"id":"0136","name":"SURACHET KUSOLSONG （スラチェットさん）"},{"id":"0137","name":"SOMCHAI SANGTHONG (ソムチャイさん）"},{"id":"0138","name":"SEREE JAKKRAWAT（セリさん）"},{"id":"0139","name":"PHON HOANG LINH （リンさん）"},{"id":"0140","name":"NHU THONG NGUYEN （トンさん）"},{"id":"0141","name":"SHRIKANT CHANDRAKANT SHELAR（チャンドラーさん）"},{"id":"0142","name":"ISHA SHARMA（イシャさん）"}]; /* EMBED_MARKER */
+var EMBEDDED_PARTICIPANTS = [{"id":"01","name":"高田　修"},{"id":"02","name":"古池　隆行"},{"id":"03","name":"土井　清志"},{"id":"04","name":"清水　隆史"},{"id":"05","name":"紺野　由美"},{"id":"06","name":"ＮＧＵＹＥＮ　ＴＨＩ　ＬＩＮＨ"},{"id":"07","name":"安藤　千絵"},{"id":"08","name":"持丸　真弓"},{"id":"09","name":"荻原　康"},{"id":"10","name":"加瀬　泰清"},{"id":"11","name":"鈴木　梨絵"},{"id":"12","name":"笹原　法子"},{"id":"13","name":"林　真由子"},{"id":"14","name":"沖田　桃子"},{"id":"15","name":"武川　彩香"},{"id":"16","name":"園部　眞之"},{"id":"17","name":"荒木　秀幸"},{"id":"18","name":"河合　力也"},{"id":"19","name":"髙橋　陽紀"},{"id":"20","name":"布施　仁"},{"id":"21","name":"水口　治紀"},{"id":"22","name":"藤田　忠明"},{"id":"23","name":"ＩＳＬＡＭ　ＭＤ　ＡＭＩＲＵＬ"},{"id":"24","name":"Ｓａｌｉｍ　Ｆｉｔｒｉａｎａ"},{"id":"25","name":"小野寺 友貴"},{"id":"26","name":"日比野　武志"},{"id":"27","name":"山本　浩彦"},{"id":"28","name":"鈴木　剛史"},{"id":"29","name":"清水　邦浩"},{"id":"30","name":"川名　佑亮"},{"id":"31","name":"中村　克樹"},{"id":"32","name":"大塚　純也"},{"id":"33","name":"濱野　浩一"},{"id":"34","name":"内田　勝己"},{"id":"35","name":"土井　祐樹"},{"id":"36","name":"渡邊　文也"},{"id":"37","name":"山岸　大介"},{"id":"38","name":"堀　由美子"},{"id":"39","name":"浅井　真紀子"},{"id":"40","name":"井田　ひろみ"},{"id":"41","name":"横島　守"},{"id":"42","name":"皆見　浩二"},{"id":"43","name":"関根　由次"},{"id":"44","name":"踏分　敏彦"},{"id":"45","name":"中川　稔"},{"id":"46","name":"富田　真琴"},{"id":"47","name":"中村　三紀"},{"id":"48","name":"浅野　幸枝"},{"id":"49","name":"酒井　星華"},{"id":"50","name":"鷲野　友亮"},{"id":"51","name":"谷口　昂輝"},{"id":"52","name":"安藤　慶"},{"id":"53","name":"池田　梢楠"},{"id":"54","name":"張　栄晋"},{"id":"55","name":"桑原　里美"},{"id":"56","name":"上田　悦子"},{"id":"57","name":"堀田　美智子"},{"id":"58","name":"芳賀　健介"},{"id":"59","name":"下村　知大"},{"id":"60","name":"小田桐　秀幸"},{"id":"61","name":"石原　和行"},{"id":"62","name":"藤田　博"},{"id":"63","name":"向田　潤一"},{"id":"64","name":"三橋　徹"},{"id":"65","name":"根岸　良成"},{"id":"66","name":"萩原　文彦"},{"id":"67","name":"上田　祐二"},{"id":"68","name":"三澤　翔"},{"id":"69","name":"上村　東"},{"id":"70","name":"上村　海帆"},{"id":"71","name":"米澤　慎二"},{"id":"72","name":"櫛田　宗一"},{"id":"73","name":"伊藤　俊行"},{"id":"74","name":"宮久保　寛明"},{"id":"75","name":"志賀　一哉"},{"id":"76","name":"馬場　亮臣"},{"id":"77","name":"中川　真"},{"id":"78","name":"根　恵太"},{"id":"79","name":"大内　修司"},{"id":"80","name":"森谷　智彦"},{"id":"81","name":"藤元　誠二"},{"id":"82","name":"酒巻　和寛"},{"id":"83","name":"玉城　雄太"},{"id":"84","name":"サリヨシ　シャハプトラ"},{"id":"85","name":"小田島　真之介"},{"id":"86","name":"降矢　温志"},{"id":"87","name":"グェン　ヴァン　トアン"},{"id":"88","name":"渡部　敦未"},{"id":"89","name":"ＬＥ　ＶＡＮ　ＱＵＯＣ"},{"id":"90","name":"富田 真司"},{"id":"91","name":"東谷 勝弘"},{"id":"92","name":"佐々木 千鶴子"},{"id":"93","name":"竹内 隆之介"},{"id":"94","name":"田中 順二"},{"id":"95","name":"桐生 健作"},{"id":"96","name":"阿部 利二"},{"id":"97","name":"桐生 藤雄"},{"id":"98","name":"湯沢 敬"},{"id":"99","name":"柿下 幸喜"},{"id":"100","name":"松田 勇二"},{"id":"101","name":"安藤 国保"},{"id":"102","name":"熊谷 好武"},{"id":"103","name":"恩田 智也"},{"id":"104","name":"近藤 悠"},{"id":"105","name":"櫻井 勇輝"},{"id":"106","name":"磯部 達也"},{"id":"107","name":"竹村 優"},{"id":"108","name":"木下 翔太"},{"id":"109","name":"増田 裕則"},{"id":"110","name":"関口 哲平"},{"id":"111","name":"北沢 勝"},{"id":"112","name":"倉田 達優"},{"id":"113","name":"木下 大輝"},{"id":"114","name":"小笠 原悠斗"},{"id":"115","name":"下枝 美智子"},{"id":"116","name":"古田 沙緒里"},{"id":"117","name":"原 圭司"},{"id":"118","name":"松下 純"},{"id":"119","name":"細田 正臣"},{"id":"120","name":"鈴木 大介"},{"id":"121","name":"大池 一嘉"},{"id":"122","name":"平栗 和典"},{"id":"123","name":"後藤 敦志"},{"id":"124","name":"熊谷 穏"},{"id":"125","name":"宮島 裕斗"},{"id":"126","name":"恩田 憲子"},{"id":"127","name":"遠山 紀子"},{"id":"128","name":"太田 正樹"},{"id":"129","name":"大島 勇希"},{"id":"130","name":"王锺瑾　（王董事長）"},{"id":"131","name":"王玉弘（王董事長の娘様）"},{"id":"132","name":"黎昭玉　（アニョさん）"},{"id":"133","name":"陳富群　（チンさん）"},{"id":"134","name":"葛 惠珍（カツさん）"},{"id":"135","name":"SOMYOT RUJIWONGROJ（ソムヨットさん）"},{"id":"136","name":"SURACHET KUSOLSONG （スラチェットさん）"},{"id":"137","name":"SOMCHAI SANGTHONG (ソムチャイさん）"},{"id":"138","name":"SEREE JAKKRAWAT（セリさん）"},{"id":"139","name":"PHON HOANG LINH （リンさん）"},{"id":"140","name":"NHU THONG NGUYEN （トンさん）"},{"id":"141","name":"SHRIKANT CHANDRAKANT SHELAR（チャンドラーさん）"},{"id":"142","name":"ISHA SHARMA（イシャさん）"}]; /* EMBED_MARKER */
 
 let participants = [];
 let attendance = {};
@@ -857,7 +912,7 @@ function renderParticipants() {
 function addOne() {
   const inp = document.getElementById('add-name');
   const name = inp.value.trim(); if (!name) return;
-  participants.push({ id: String(nextId++).padStart(4,'0'), name });
+  participants.push({ id: String(nextId++).padStart(2,'0'), name });
   inp.value = ''; inp.focus();
   renderParticipants();
 }
@@ -873,7 +928,7 @@ function delP(id) {
 function bulkAdd() {
   const lines = document.getElementById('bulk-text').value.split('\n').map(l=>l.trim()).filter(Boolean);
   if (!lines.length) return;
-  lines.forEach(name => participants.push({ id: String(nextId++).padStart(4,'0'), name }));
+  lines.forEach(name => participants.push({ id: String(nextId++).padStart(2,'0'), name }));
   document.getElementById('bulk-text').value = '';
   qrDone = false; renderParticipants();
   alert(lines.length + '名を追加しました');
@@ -887,7 +942,7 @@ function clearAll() {
 
 function loadSample() {
   ['田中 花子','鈴木 一郎','佐藤 美咲','山田 太郎','中村 さくら','伊藤 健太','渡辺 由美','加藤 翔','小林 あおい','松本 誠']
-    .forEach(name => participants.push({ id: String(nextId++).padStart(4,'0'), name }));
+    .forEach(name => participants.push({ id: String(nextId++).padStart(2,'0'), name }));
   qrDone = false; renderParticipants();
   alert('サンプル10名を追加しました');
 }
@@ -929,6 +984,7 @@ function doCheck() {
     item.innerHTML=`<div><div class="feed-name">${p.name}</div><div class="feed-sub"><span class="badge badge-warn">重複</span> 初回: ${attendance[p.id]}</div></div><span class="feed-time">${now}</span>`;
   } else {
     attendance[p.id]=now;
+    if (window.fbRecord) window.fbRecord(p.id, now);
     item.classList.add('ok');
     item.innerHTML=`<div><div class="feed-name">${p.name}</div><div class="feed-sub"><span class="badge badge-ok">出席確認</span></div></div><span class="feed-time">${now}</span>`;
   }
@@ -971,6 +1027,15 @@ function exportCSV() {
 }
 
 /* ===== EXPORT HTML WITH EMBEDDED PARTICIPANTS ===== */
+function resetAttendance() {
+  if (!confirm('全端末の出欠データをリセットします。よろしいですか？')) return;
+  attendance = {};
+  if (window.fbClearAttendance) window.fbClearAttendance();
+  updateStats();
+  renderListTab();
+  document.getElementById('feed').innerHTML='<p style="text-align:center;color:var(--muted);font-size:13px;padding:1rem;">待機中...</p>';
+}
+
 function exportHTML() {
   if (!participants.length){alert('先に参加者を追加してください');return;}
   // Get current HTML source
